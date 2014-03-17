@@ -102,6 +102,37 @@ prog.call(->(x){ x * 2 }) #=> 84
 prog.call(->(x){ x + 4 }) #=> 46
 ```
 
+Of course, functions can be defined recursively too.
+
+``` lisp
+;; Recursive function example.
+(def loop
+     (lambda (n)
+       (if (= n 0)
+         (quote done)
+         (progn
+           (puts n)
+           (loop (- n 1))))))
+
+
+(loop 20)
+```
+
+The above code will print 20 through 1 to the screen and finally return the
+Symbol `:done` to Ruby (quoted Iode Symbols are also Ruby Symbols). Note that
+I haven't yet done tail call elimination.
+
+Similarly, closures can be returned from functions.
+
+``` lisp
+;; Provides partial application of a function
+(def curry
+     (lambda (fn a)
+       (lambda (b) (fn a b))))
+
+((curry + 2) 3) ; 5
+```
+
 ## Development
 
 Iode (in this Ruby incarnation) is literally a few hours old at the time I
