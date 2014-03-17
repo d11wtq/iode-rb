@@ -45,6 +45,52 @@ Or you can send the source code to STDIN:
 iode-rb < path/to/file.io
 ```
 
+The basic hello world looks like so.
+
+``` lisp
+;; this is a comment
+(puts "Hello World!")
+```
+
+Functions are (currently) defined in terms of `lambda`.
+
+``` lisp
+((lambda (x y) (* x y)) 6 3) ; 18
+```
+
+As you'd expect, functions are first-class objects in Iode.
+
+Of course, functions can be defined recursively too.
+
+``` lisp
+;; Recursive function example.
+(def loop
+     (lambda (n)
+       (if (= n 0)
+         (quote done)
+         (progn
+           (puts n)
+           (loop (- n 1))))))
+
+(loop 20)
+```
+
+The above code will print 20 through 1 to the screen and finally return the
+Symbol `:done` to Ruby (quoted Iode Symbols are also Ruby Symbols). Note that
+I haven't yet done tail call elimination.
+
+Similarly, closures can be returned from functions.
+
+``` lisp
+;; Provides partial application of a function
+(def curry
+     (lambda (fn a)
+       (lambda (b) (fn a b))))
+
+((curry + 2) 3) ; 5
+```
+
+
 ### In Ruby Code
 
 Using Iode from inside Ruby code can be interesting, as it will interoperate
@@ -100,36 +146,6 @@ PROG
 
 prog.call(->(x){ x * 2 }) #=> 84
 prog.call(->(x){ x + 4 }) #=> 46
-```
-
-Of course, functions can be defined recursively too.
-
-``` lisp
-;; Recursive function example.
-(def loop
-     (lambda (n)
-       (if (= n 0)
-         (quote done)
-         (progn
-           (puts n)
-           (loop (- n 1))))))
-
-(loop 20)
-```
-
-The above code will print 20 through 1 to the screen and finally return the
-Symbol `:done` to Ruby (quoted Iode Symbols are also Ruby Symbols). Note that
-I haven't yet done tail call elimination.
-
-Similarly, closures can be returned from functions.
-
-``` lisp
-;; Provides partial application of a function
-(def curry
-     (lambda (fn a)
-       (lambda (b) (fn a b))))
-
-((curry + 2) 3) ; 5
 ```
 
 ## Development
