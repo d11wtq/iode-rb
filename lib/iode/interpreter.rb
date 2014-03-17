@@ -17,14 +17,36 @@
 module Iode
   # Iode interpreter, providing the central #eval function.
   class Interpreter
-    include BuiltIns # FIXME: Remove this coupling!
-
     # Create a new Interpreter with a given Scope.
     #
     # @param [Scope] scope
     #   the initial environment
     def initialize(scope = Scope.new)
       @env = scope
+    end
+
+    # Get the head (car) of a list.
+    #
+    # @param [Array] list
+    #   the list to return the car from
+    #
+    # @return [Object]
+    #   the first element in list
+    def car(list)
+      v, *_ = list
+      v
+    end
+
+    # Get the tail (cdr) of a list.
+    #
+    # @param [Array] list
+    #   the list to return the cdr from
+    #
+    # @return [Array]
+    #   all but the head of the list
+    def cdr(list)
+      _, *v = list
+      v
     end
 
     # Create an explicit progn block.
@@ -93,19 +115,19 @@ module Iode
         when nil
           nil
         when :quote
-          cadr(sexp)
+          car(cdr(sexp))
         when :if
-          if eval(cadr(sexp))
-            eval(caddr(sexp))
+          if eval(car(cdr(sexp)))
+            eval(car(cdr(cdr(sexp))))
           else
-            eval(cadddr(sexp))
+            eval(car(cdr(cdr(cdr(sexp)))))
           end
         when :progn
           progn(*cdr(sexp))
         when :set!
-          @env[cadr(sexp)] = eval(caddr(sexp))
+          @env[car(cdr(sexp))] = eval(car(cdr(cdr(sexp))))
         when :lambda
-          lambda(cadr(sexp), *cddr(sexp))
+          lambda(car(cdr(sexp)), *cdr(cdr(sexp)))
         else
           apply(eval(car(sexp)), cdr(sexp).map(&method(:eval)))
         end

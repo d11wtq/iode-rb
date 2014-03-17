@@ -16,7 +16,6 @@
 
 require "iode/version"
 require "iode/scope"
-require "iode/built_ins"
 require "iode/interpreter"
 require "iode/reader"
 
