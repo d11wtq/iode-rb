@@ -126,6 +126,8 @@ module Iode
           progn(*cdr(sexp))
         when :set!
           @env[car(cdr(sexp))] = eval(car(cdr(cdr(sexp))))
+        when :def
+          @env.define(car(cdr(sexp)), eval(car(cdr(cdr(sexp)))))
         when :lambda
           lambda(car(cdr(sexp)), *cdr(cdr(sexp)))
         else

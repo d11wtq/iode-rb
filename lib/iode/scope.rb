@@ -31,6 +31,20 @@ module Iode
       @parent = parent
     end
 
+    # Define a new variable.
+    #
+    # @param [Symbol] k
+    #   the name of the variable to define
+    #
+    # @param [Object] v
+    #   the value to set
+    #
+    # @return [Object]
+    #   the newly defined value
+    def define(k, v)
+      @values[k] = v
+    end
+
     # Reference a variable in this Scope or any parent Scopes.
     #
     # Raises a RuntimeError if the variable does not exist.
