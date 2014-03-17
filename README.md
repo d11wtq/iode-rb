@@ -4,17 +4,9 @@ An experimental lisp-family language hosted on Ruby.
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-    gem 'iode'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install iode
+```
+gem install iode
+```
 
 ## Usage
 
@@ -28,8 +20,8 @@ what the syntax and language features may include. Ruby is perfect for that.
 Once I have good ideas put down as working examples in this project, they will
 be ported upstream to the native JIT interpreter for LLVM.
 
-Currently this project just implements the guts of a functional lisp-family of
-languages. It will change considerably from the current implementation.
+Currently this project just implements the guts of a functional language in the
+lisp-family. It will change considerably from the current implementation.
 
 ### Command Line
 
@@ -50,6 +42,12 @@ The basic hello world looks like so.
 ``` lisp
 ;; this is a comment
 (puts "Hello World!")
+```
+
+Some built-in data types (e.g. fractions) are enriched with literals in iode.
+
+``` lisp
+(+ 1/2 2/3) ; 7/6
 ```
 
 Functions are (currently) defined in terms of `lambda`.
@@ -108,12 +106,8 @@ PROG
 puts result
 ```
 
-The above code creates a lambda function that simply acts like the identity
-function (i.e. it returns its input). That lambda is then immediately applied
-with the input `false`, thereby returning `false`.
-
-The `if` form evaluates false and therefore evaluates the else part of the
-`if`, returning the string "x = false".
+This returns the string "x = false" to Ruby. Hopefully you can see what the
+code does.
 
 Here's another example showing how you can pass values from Ruby into Iode.
 
@@ -131,10 +125,10 @@ prog.call(false) #=> 7
 prog.call(true)  #=> 42
 ```
 
-This works because internally, Iode lambdas as represented as Ruby Procs.
+This works because internally, iode lambdas are represented as Procs.
 
 Incidentally, that means you can even pass higher-order functions from Ruby
-to Iode.
+to iode.
 
 ``` ruby
 require "iode"
@@ -155,7 +149,7 @@ write this. Much is still not yet developed. However, you may poke around in
 the internals and find some interesting this. A string of source code takes
 this path to being executed as code.
 
-    String(source) -> Reader(data) -> Interpreter(data) -> Core(data) -> Result
+    Input -> Reader<data> -> Interpreter<data> -> Core<data> -> Output
 
 The source string is parsed by the Reader into native lisp data (using Ruby
 data types, like Array and Symbol). The data representation is then given to
@@ -165,7 +159,7 @@ a Proc). Variables are held in the Scope class, which is able to chain Scopes
 together to create lexical closures. Core functions are registered as mixins
 in the Core module.
 
-If you want to add a native Ruby function to be applied like an Iode function,
+If you want to add a native Ruby function to be applied like an iode function,
 put it in a Module and register it into `Iode::Core`:
 
 ``` ruby
@@ -182,7 +176,7 @@ Iode::Core.register MyFunctions
 Iode.run('(example 7 5)') #=> 12
 ```
 
-Once I have namespacing done, you'll be able to write actual Iode code in
+Once I have namespacing done, you'll be able to write actual iode code in
 separate files and have them loaded under a namespace.
 
 ## Copyright & Licensing

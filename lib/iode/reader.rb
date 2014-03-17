@@ -29,6 +29,9 @@ module Iode
     rule("(")
     rule(")")
 
+    # fractions as literals
+    rule(:rational => /[0-9]+\/[0-9]+/).as{|n| Rational(n)}
+
     # scalars
     {
       float:  /[0-9]+\.[0-9]+/,
@@ -57,6 +60,7 @@ module Iode
     rule(:atom) do |r|
       r[:int]
       r[:float]
+      r[:rational]
       r[:string]
       r[:symbol]
     end
