@@ -19,6 +19,10 @@ require "iode/core"
 module Iode
   module Core
     module Lists
+      def list(*args)
+        args
+      end
+
       def car(list)
         v, *_ = list
         v
