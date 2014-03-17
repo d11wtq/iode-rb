@@ -53,11 +53,13 @@ with Ruby.
 ``` ruby
 require "iode"
 
-puts Iode.run <<-PROG
+result = Iode.run <<-PROG
 (if ((lambda (x) x) false)
   "x = true"
   "x = false")
 PROG
+
+puts result
 ```
 
 The above code creates a lambda function that simply acts like the identity
@@ -65,7 +67,7 @@ function (i.e. it returns its input). That lambda is then immediately applied
 with the input `false`, thereby returning `false`.
 
 The `if` form evaluates false and therefore evaluates the else part of the
-`if`, returning the string `"x = false"`.
+`if`, returning the string "x = false".
 
 Here's another example showing how you can pass values from Ruby into Iode.
 
@@ -75,12 +77,12 @@ require "iode"
 prog = Iode.run <<-PROG
 (lambda (x)
   (if x
-    42
-    7))
+    (puts 42)
+    (puts 7)))
 PROG
 
-prog[false] #=> 7
-prog[true]  #=> 42
+prog.call(false) #=> 7
+prog.call(true)  #=> 42
 ```
 
 This works because internally, Iode lambdas as represented as Ruby Procs.
@@ -93,18 +95,49 @@ require "iode"
 
 prog = Iode.run <<-PROG
 (lambda (f)
-  (if (f)
-    42
-    7))
+  (f 42))
 PROG
 
-prog.call(->(){ false }) #=> 7
-prog.call(->(){ true })  #=> 42
+prog.call(->(x){ x * 2 }) #=> 84
+prog.call(->(x){ x + 4 }) #=> 46
 ```
 
-I'd show a more complex example if the language were more than 3 hours old!
-There are not even any mathematic operators or persistent definitions yet,
-though all the wiring is there, I just need to define a core library.
+## Development
+
+Iode (in this Ruby incarnation) is literally a few hours old at the time I
+write this. Much is still not yet developed. However, you may poke around in
+the internals and find some interesting this. A string of source code takes
+this path to being executed as code.
+
+    String(source) -> Reader(data) -> Interpreter(data) -> Core(data) -> Result
+
+The source string is parsed by the Reader into native lisp data (using Ruby
+data types, like Array and Symbol). The data representation is then given to
+the Interpreter's eval method, which is a simple recursive algorithm mapping
+the elements in the data to executable types (e.g. `[:lambda, [], 42]` becomes
+a Proc). Variables are held in the Scope class, which is able to chain Scopes
+together to create lexical closures. Core functions are registered as mixins
+in the Core module.
+
+If you want to add a native Ruby function to be applied like an Iode function,
+put it in a Module and register it into `Iode::Core`:
+
+``` ruby
+require "iode"
+
+module MyFunctions
+  def example(a, b)
+    a + b
+  end
+end
+
+Iode::Core.register MyFunctions
+
+Iode.run('(example 7 5)') #=> 12
+```
+
+Once I have namespacing done, you'll be able to write actual Iode code in
+separate files and have them loaded under a namespace.
 
 ## Copyright & Licensing
 

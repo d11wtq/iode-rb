@@ -1,4 +1,4 @@
-# iode: iode.rb
+# iode: core/output.rb
 # 
 # Copyright 2014 Chris Corbyn <chris@w3style.co.uk>
 # 
@@ -14,25 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "iode/version"
-require "iode/core/lists"
-require "iode/core/math"
-require "iode/core/output"
-require "iode/scope"
-require "iode/interpreter"
-require "iode/reader"
+require "iode/core"
 
 module Iode
-  class << self
-    # Run a string of iode source code and return a value to Ruby.
-    #
-    # @param [String] source
-    #   iode source code
-    #
-    # @return [Object]
-    #   the return value of the program
-    def run(source)
-      Interpreter.new.eval(Reader.new.read(source))
+  module Core
+    module Output
+      def puts(*args, &block)
+        Kernel.puts(*args, &block)
+      end
+
+      def p(*args, &block)
+        Kernel.p(*args, &block)
+      end
     end
   end
 end
+
+Iode::Core.register Iode::Core::Output

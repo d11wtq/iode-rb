@@ -26,8 +26,8 @@ module Iode
     #
     # @param [Scope] parent
     #   the parent scope, if any
-    def initialize(values = {}, parent = nil)
-      @values = values
+    def initialize(values = nil, parent = nil)
+      @values = values || Core.definitions
       @parent = parent
     end
 
