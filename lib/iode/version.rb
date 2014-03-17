@@ -15,5 +15,5 @@
 # limitations under the License.
 
 module Iode
-  VERSION = "0.0.1"
+  VERSION = "0.0.2"
 end
