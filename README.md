@@ -114,7 +114,6 @@ Of course, functions can be defined recursively too.
            (puts n)
            (loop (- n 1))))))
 
-
 (loop 20)
 ```
 
