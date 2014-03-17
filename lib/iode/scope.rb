@@ -31,7 +31,7 @@ module Iode
       @parent = parent
     end
 
-    # Reference a variable in this scope.
+    # Reference a variable in this Scope or any parent Scopes.
     #
     # Raises a RuntimeError if the variable does not exist.
     #
@@ -46,13 +46,13 @@ module Iode
       elsif @parent
         @parent[k]
       else
-        raise "Undefined variable `#{k}`"
+        raise "Reference to undefined variable `#{k}`"
       end
     end
 
-    # Re-assign a variable in this scope.
+    # Re-assign a variable in this Scope, or any parent Scope.
     #
-    # If the variable does not exist, it will be initialized.
+    # Raises a RuntimeError if the variable does not exist.
     #
     # @param [Symbol] k
     #   the variable name to assign
@@ -63,13 +63,18 @@ module Iode
     # @return [Object]
     #   the assigned object
     def []=(k, v)
-      @values[k] = v
+      if @values.key?(k)
+        @values[k] = v
+      elsif @parent
+        @parent[k] = v
+      else
+        raise "Reference to undefined variable `#{k}`"
+      end
     end
 
     # Create a new Scope with this Scope as its parent.
     #
-    # The new Scope will have access to all variables in this Scope,
-    # but assignments will only mask variables, not replace them.
+    # The new Scope will have access to all variables in this Scope.
     #
     # @param [Hash] values
     #   variables to exist in the new Scope
