@@ -28,6 +28,7 @@ module Iode
     # syntax
     rule("(")
     rule(")")
+    rule("'")
 
     # fractions as literals
     rule(:rational => /[0-9]+\/[0-9]+/).as{|n| Rational(n)}
@@ -43,7 +44,7 @@ module Iode
     end
 
     # variables/symbols
-    rule(symbol: /[^\(\)\s;]+/).as do |v|
+    rule(symbol: /[^\(\)\s;'"`:]+/).as do |v|
       case v
       when "nil"
         nil
@@ -75,6 +76,7 @@ module Iode
     # s-exprs
     rule(:sexp) do |r|
       r[:atom]
+      r["'", :sexp].as           {|_, sexp| [:quote, sexp]}
       r["(", :sexp_list, ")"].as {|_, list, _| list}
     end
 

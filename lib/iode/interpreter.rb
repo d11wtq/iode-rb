@@ -63,7 +63,7 @@ module Iode
       sexps.inject(nil){|_,s| eval(s)}
     end
 
-    # Create a new lambda for Iode.
+    # Create a new lambda.
     #
     # These lambdas act as closures in their environment.
     #
@@ -73,10 +73,31 @@ module Iode
     # @param [Object...] *sexps
     #   variadic list of S-Expressions for the body
     #
-    # @return [Proc]
+    # @return [Lambda]
     #   a callable lambda
     def lambda(argnames, *sexps)
-      Proc.new do |*args|
+      Lambda.new do |*args|
+        Interpreter.new(
+          @env.push_scope(Hash[argnames.zip(args)])
+        ).progn(*sexps)
+      end
+    end
+
+    # Create a new macro.
+    #
+    # Macros are acually just a special case of lambda and also close their
+    # environment and can be passed as arguments.
+    #
+    # @param [Array] argnames
+    #   a list of argument names as macro inputs
+    #
+    # @param [Object...] *sexps
+    #   variadic list of S-Expressions for the body
+    #
+    # @return [Macro]
+    #   a callable macro
+    def macro(argnames, *sexps)
+      Macro.new do |*args|
         Interpreter.new(
           @env.push_scope(Hash[argnames.zip(args)])
         ).progn(*sexps)
@@ -116,6 +137,8 @@ module Iode
           nil
         when :quote
           car(cdr(sexp))
+        when :quasiquote
+          car(cdr(sexp))
         when :if
           if eval(car(cdr(sexp)))
             eval(car(cdr(cdr(sexp))))
@@ -130,8 +153,18 @@ module Iode
           @env.define(car(cdr(sexp)), eval(car(cdr(cdr(sexp)))))
         when :lambda
           lambda(car(cdr(sexp)), *cdr(cdr(sexp)))
+        when :macro
+          macro(car(cdr(sexp)), *cdr(cdr(sexp)))
+        when :apply
+          eval([car(cdr(sexp)), *car(cdr(cdr(sexp)))])
         else
-          apply(eval(car(sexp)), cdr(sexp).map(&method(:eval)))
+          callee = eval(car(sexp))
+          case callee
+          when Macro
+            eval(apply(callee, cdr(sexp)))
+          else
+            apply(callee, cdr(sexp).map(&method(:eval)))
+          end
         end
       when Symbol
         @env[sexp]

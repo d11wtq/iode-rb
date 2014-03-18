@@ -1,4 +1,4 @@
-# iode: core/output.rb
+# iode: core/lists.rb
 # 
 # Copyright 2014 Chris Corbyn <chris@w3style.co.uk>
 # 
@@ -14,25 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "iode/core"
-require "pp"
-
 module Iode
   module Core
-    module Output
-      def puts(*args, &block)
-        Kernel.puts(*args, &block)
+    module Strings
+      def str(*args)
+        args.map(&:to_s).join
       end
 
-      def p(*args, &block)
-        Kernel.p(*args, &block)
-      end
-
-      def pp(*args, &block)
-        Kernel.pp(*args, &block)
+      def format(s, *args)
+        s % args
       end
     end
   end
 end
 
-Iode::Core.register Iode::Core::Output
+Iode::Core.register Iode::Core::Strings

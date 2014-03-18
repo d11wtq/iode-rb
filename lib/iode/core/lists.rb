@@ -32,6 +32,10 @@ module Iode
         _, *v = list
         v
       end
+
+      def map(fn, list)
+        list.map(&fn)
+      end
     end
   end
 end

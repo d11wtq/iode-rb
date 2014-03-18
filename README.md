@@ -116,6 +116,54 @@ Or something that updates some internal state.
 (puts (counter)) ; 4
 ```
 
+#### Macros
+
+Yes, iode has macros. In fact, very powerful macros. You can think of macros in
+the same way you think about lambdas. They are 100% first-class to iode and
+have values that can be assigned to variables, passed into functions etc. Like
+lambdas, they also provide a lexical closure over their environment. The
+difference between a macro and a lambda is that a macro receives unevaluated
+*code* as input and produces *code* as output.
+
+The syntax for returning code is a little cumbersome at this point, since I
+haven't yet added quasiquoting to provide that magical "templating" that lisps
+offer. Lots of `list` and `quote` for now. Quasiquoting is coming, however.
+
+Since iode doesn't yet have a `let` form, let's make our own with a macro.
+
+``` lisp
+(def cadr
+ (lambda (v) (car (cdr v))))
+
+(def let
+ (macro (bindings body)
+   (list
+    (quote apply)
+    (list (quote lambda)
+          (map car bindings)
+          body)
+     (map cadr bindings))))
+
+(let ((x 7)
+      (y 8))
+  (puts (* x y)))
+```
+
+Note that the body of the macro in this version must be a single s-expression,
+since variadic arguments are not yet implemented in the language. You may use
+a `progn`, however.
+
+``` lisp
+(let ((x 7)
+      (y 8))
+  (progn
+    (puts (str "x = " x))
+    (puts (str "y = " y))
+    (puts (str "x * y = " (* x y)))))
+```
+
+Macros as values are a powerful feature of iode.
+
 ### In Ruby Code
 
 Using Iode from inside Ruby code can be interesting, as it will interoperate

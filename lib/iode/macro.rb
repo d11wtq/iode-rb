@@ -1,4 +1,4 @@
-# iode: core/output.rb
+# iode: macro.rb
 # 
 # Copyright 2014 Chris Corbyn <chris@w3style.co.uk>
 # 
@@ -14,25 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "iode/core"
-require "pp"
-
 module Iode
-  module Core
-    module Output
-      def puts(*args, &block)
-        Kernel.puts(*args, &block)
-      end
-
-      def p(*args, &block)
-        Kernel.p(*args, &block)
-      end
-
-      def pp(*args, &block)
-        Kernel.pp(*args, &block)
-      end
-    end
+  # Class that represents a macro function in iode.
+  class Macro < Lambda
   end
 end
-
-Iode::Core.register Iode::Core::Output
