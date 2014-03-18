@@ -63,12 +63,12 @@ Of course, functions can be defined recursively too.
 ``` lisp
 ;; Recursive function example.
 (def loop
-     (lambda (n)
-       (if (= n 0)
-         (quote done)
-         (progn
-           (puts n)
-           (loop (- n 1))))))
+ (lambda (n)
+   (if (= n 0)
+     (quote done)
+     (progn
+       (puts n)
+       (loop (- n 1))))))
 
 (loop 20)
 ```
