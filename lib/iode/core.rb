@@ -22,6 +22,8 @@ module Iode
   # The actual functions are mixed in by other modules.
   module Core
     class << self
+      include Core
+
       # Register a new library of functions into the global definitions.
       #
       # @param [Module] base
