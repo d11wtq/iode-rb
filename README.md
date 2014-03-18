@@ -84,7 +84,7 @@ Similarly, closures can be returned from functions.
  (lambda (n x)
    (if (= x 0)
       1
-         (* n (expt n (dec x))))))
+      (* n (expt n (dec x))))))
 
 (def make-expt-fn
  (lambda (x)
@@ -98,6 +98,22 @@ Similarly, closures can be returned from functions.
 
 (puts (square 4))
 (puts (cube 4))
+```
+
+Or something that updates some internal state.
+
+``` lisp
+(def make-counter
+ (lambda (n)
+   (lambda () (set! n (inc n)))))
+
+(def counter
+ (make-counter 0))
+
+(puts (counter)) ; 1
+(puts (counter)) ; 2
+(puts (counter)) ; 3
+(puts (counter)) ; 4
 ```
 
 ### In Ruby Code
