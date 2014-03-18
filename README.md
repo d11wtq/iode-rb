@@ -73,21 +73,32 @@ Of course, functions can be defined recursively too.
 (loop 20)
 ```
 
-The above code will print 20 through 1 to the screen and finally return the
-Symbol `:done` to Ruby (quoted Iode Symbols are also Ruby Symbols). Note that
-I haven't yet done tail call elimination.
-
 Similarly, closures can be returned from functions.
 
 ``` lisp
-;; Provides partial application of a function
-(def curry
-     (lambda (fn a)
-       (lambda (b) (fn a b))))
+(def dec
+ (lambda (n)
+   (- n 1)))
 
-((curry + 2) 3) ; 5
+(def expt
+ (lambda (n x)
+   (if (= x 0)
+      1
+         (* n (expt n (dec x))))))
+
+(def make-expt-fn
+ (lambda (x)
+   (lambda (n) (expt n x))))
+
+(def square
+ (make-expt-fn 2))
+
+(def cube
+ (make-expt-fn 3))
+
+(puts (square 4))
+(puts (cube 4))
 ```
-
 
 ### In Ruby Code
 
