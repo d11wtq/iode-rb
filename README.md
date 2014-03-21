@@ -50,10 +50,10 @@ Some built-in data types (e.g. fractions) are enriched with literals in iode.
 (+ 1/2 2/3) ; 7/6
 ```
 
-Functions are (currently) defined in terms of `lambda`.
+Functions are defined in terms of `func`.
 
 ``` lisp
-((lambda (x y) (* x y)) 6 3) ; 18
+((func (x y) (* x y)) 6 3) ; 18
 ```
 
 As you'd expect, functions are first-class objects in Iode.
@@ -61,11 +61,10 @@ As you'd expect, functions are first-class objects in Iode.
 Of course, functions can be defined recursively too.
 
 ``` lisp
-;; Recursive function example.
 (def loop
- (lambda (n)
+ (func (n)
    (if (= n 0)
-     (quote done)
+     'done
      (progn
        (puts n)
        (loop (- n 1))))))
@@ -77,18 +76,18 @@ Similarly, closures can be returned from functions.
 
 ``` lisp
 (def dec
- (lambda (n)
+ (func (n)
    (- n 1)))
 
 (def expt
- (lambda (n x)
+ (func (n x)
    (if (= x 0)
       1
       (* n (expt n (dec x))))))
 
 (def make-expt-fn
- (lambda (x)
-   (lambda (n) (expt n x))))
+ (func (x)
+   (func (n) (expt n x))))
 
 (def square
  (make-expt-fn 2))
@@ -104,8 +103,8 @@ Or something that updates some internal state.
 
 ``` lisp
 (def make-counter
- (lambda (n)
-   (lambda () (set! n (inc n)))))
+ (func (n)
+   (func () (set! n (inc n)))))
 
 (def counter
  (make-counter 0))
@@ -119,10 +118,10 @@ Or something that updates some internal state.
 #### Macros
 
 Yes, iode has macros. In fact, very powerful macros. You can think of macros in
-the same way you think about lambdas. They are 100% first-class to iode and
+the same way you think about funcs. They are 100% first-class to iode and
 have values that can be assigned to variables, passed into functions etc. Like
-lambdas, they also provide a lexical closure over their environment. The
-difference between a macro and a lambda is that a macro receives unevaluated
+funcs, they also provide a lexical closure over their environment. The
+difference between a macro and a func is that a macro receives unevaluated
 *code* as input and produces *code* as output.
 
 The syntax for returning code is a little cumbersome at this point, since I
@@ -133,13 +132,13 @@ Since iode doesn't yet have a `let` form, let's make our own with a macro.
 
 ``` lisp
 (def cadr
- (lambda (v) (car (cdr v))))
+ (func (v) (car (cdr v))))
 
 (def let
  (macro (bindings body)
    (list
-    (quote apply)
-    (list (quote lambda)
+    'apply
+    (list 'func
           (map car bindings)
           body)
      (map cadr bindings))))
@@ -173,7 +172,7 @@ with Ruby.
 require "iode"
 
 result = Iode.run <<-PROG
-(if ((lambda (x) x) false)
+(if ((func (x) x) false)
   "x = true"
   "x = false")
 PROG
@@ -190,7 +189,7 @@ Here's another example showing how you can pass values from Ruby into Iode.
 require "iode"
 
 prog = Iode.run <<-PROG
-(lambda (x)
+(func (x)
   (if x
     (puts 42)
     (puts 7)))
@@ -200,7 +199,7 @@ prog.call(false) #=> 7
 prog.call(true)  #=> 42
 ```
 
-This works because internally, iode lambdas are represented as Procs.
+This works because internally, iode funcs are represented as Procs.
 
 Incidentally, that means you can even pass higher-order functions from Ruby
 to iode.
@@ -209,7 +208,7 @@ to iode.
 require "iode"
 
 prog = Iode.run <<-PROG
-(lambda (f)
+(func (f)
   (f 42))
 PROG
 
@@ -229,7 +228,7 @@ this path to being executed as code.
 The source string is parsed by the Reader into native lisp data (using Ruby
 data types, like Array and Symbol). The data representation is then given to
 the Interpreter's eval method, which is a simple recursive algorithm mapping
-the elements in the data to executable types (e.g. `[:lambda, [], 42]` becomes
+the elements in the data to executable types (e.g. `[:func, [], 42]` becomes
 a Proc). Variables are held in the Scope class, which is able to chain Scopes
 together to create lexical closures. Core functions are registered as mixins
 in the Core module.
