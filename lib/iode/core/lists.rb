@@ -23,6 +23,10 @@ module Iode
         args
       end
 
+      def cons(v, list)
+        [v, *list]
+      end
+
       def car(list)
         v, *_ = list
         v
@@ -35,6 +39,10 @@ module Iode
 
       def map(fn, list)
         list.map(&fn)
+      end
+
+      def empty?(list)
+        list.empty?
       end
     end
   end
