@@ -26,12 +26,30 @@ module Iode
     rule(/;.*/).skip!
 
     # syntax
+    rule("'")
     rule("(")
     rule(")")
-    rule("'")
+    rule("{")
+    rule("}")
 
     # fractions as literals
     rule(:rational => /[0-9]+\/[0-9]+/).as{|n| Rational(n)}
+
+    # key-value pair in a map
+    rule(:map_pair) do |r|
+      r[:sexp, :sexp].as {|a, b| [a, b]}
+    end
+
+    # list of key-value pairs in a mpa
+    rule(:map_pair_list) do |r|
+      r[].as                          {[]}
+      r[:map_pair_list, :map_pair].as {|list, pair| list << pair}
+    end
+
+    # maps
+    rule(:map) do |r|
+      r["{", :map_pair_list, "}"].as{|_, pairs, _| Types::Map.new(pairs)}
+    end
 
     # scalars
     {
@@ -44,7 +62,7 @@ module Iode
     end
 
     # variables/symbols
-    rule(symbol: /[^\(\)\s;'"`:]+/).as do |v|
+    rule(symbol: /[^\(\)\s;'"`\{\}]+/).as do |v|
       case v
       when "nil"
         nil
@@ -64,6 +82,7 @@ module Iode
       r[:rational]
       r[:string]
       r[:symbol]
+      r[:map]
     end
 
     # lists of s-exps

@@ -1,4 +1,4 @@
-# iode: iode.rb
+# iode: map.rb
 # 
 # Copyright 2014 Chris Corbyn <chris@w3style.co.uk>
 # 
@@ -14,31 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require "iode/version"
-require "iode/type"
-require "iode/types/map"
-require "iode/core/comparisons"
-require "iode/core/lists"
-require "iode/core/math"
-require "iode/core/strings"
-require "iode/core/output"
-require "iode/scope"
-require "iode/function"
-require "iode/macro"
-require "iode/interpreter"
-require "iode/reader"
-
 module Iode
-  class << self
-    # Run a string of iode source code and return a value to Ruby.
-    #
-    # @param [String] source
-    #   iode source code
-    #
-    # @return [Object]
-    #   the return value of the program
-    def run(source)
-      Interpreter.new.eval(Reader.new.read(source))
+  module Types
+    # Represents the conversion between Iode data for a Map and Ruby's Hash.
+    class Map < Type
+      def initialize(pairs)
+        @pairs = pairs
+      end
+
+      def to_ruby(interpeter)
+        Hash[@pairs.map{|pair| pair.map(&interpeter.method(:eval))}]
+      end
     end
   end
 end

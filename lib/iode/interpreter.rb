@@ -168,6 +168,8 @@ module Iode
         end
       when Symbol
         @env[sexp]
+      when Type
+        sexp.to_ruby(self)
       else
         sexp
       end
