@@ -1,4 +1,4 @@
-# iode: core/lists.rb
+# iode: core/source_files.rb
 # 
 # Copyright 2014 Chris Corbyn <chris@w3style.co.uk>
 # 
@@ -18,34 +18,12 @@ require "iode/core"
 
 module Iode
   module Core
-    module Lists
-      def list(*args)
-        args
-      end
-
-      def cons(v, list)
-        [v, *Array(list)]
-      end
-
-      def car(list)
-        v, *_ = Array(list)
-        v
-      end
-
-      def cdr(list)
-        _, *v = Array(list)
-        v
-      end
-
-      def map(fn, list)
-        list.map(&fn)
-      end
-
-      def empty?(list)
-        list.empty?
+    module SourceFiles
+      def require(file)
+        Interpreter.new.eval(Reader.new.read_file(file))
       end
     end
   end
 end
 
-Iode::Core.register Iode::Core::Lists
+Iode::Core.register Iode::Core::SourceFiles

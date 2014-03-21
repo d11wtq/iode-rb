@@ -19,6 +19,16 @@ module Iode
   #
   # Maintains a stack of execution contexts.
   class Scope
+    class << self
+      # Load the root (global) scope.
+      #
+      # @return [Scope]
+      #   the root scope with core definitions
+      def root
+        @root ||= new(Core.definitions, nil).freeze
+      end
+    end
+
     # Create a new Scope with +values+ as available variables.
     #
     # @param [Hash] values
@@ -26,8 +36,8 @@ module Iode
     #
     # @param [Scope] parent
     #   the parent scope, if any
-    def initialize(values = nil, parent = nil)
-      @values = values || Core.definitions
+    def initialize(values = {}, parent = Scope.root)
+      @values = values
       @parent = parent
     end
 

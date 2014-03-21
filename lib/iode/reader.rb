@@ -22,6 +22,9 @@ module Iode
     # whitespace
     rule(/\s+/).skip!
 
+    # commas are ignored
+    rule(",").skip!
+
     # comments
     rule(/;.*/).skip!
 
@@ -62,7 +65,7 @@ module Iode
     end
 
     # variables/symbols
-    rule(symbol: /[^\(\)\s;'"`\{\}]+/).as do |v|
+    rule(symbol: /[^\(\)\s,;'"`\{\}]+/).as do |v|
       case v
       when "nil"
         nil
@@ -116,6 +119,17 @@ module Iode
       else
         progn.first
       end
+    end
+
+    # Read in a file as lisp data.
+    #
+    # @param [String] source
+    #   iode source file path to read in as lisp
+    #
+    # @return [Array]
+    #   the source code as data for execution
+    def read_file(path)
+      read(File.read(path))
     end
   end
 end

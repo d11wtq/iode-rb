@@ -1,4 +1,4 @@
-# iode: core/lists.rb
+# iode: core/maps.rb
 # 
 # Copyright 2014 Chris Corbyn <chris@w3style.co.uk>
 # 
@@ -18,34 +18,36 @@ require "iode/core"
 
 module Iode
   module Core
-    module Lists
-      def list(*args)
-        args
+    module Maps
+      def hashmap(*args)
+        Hash[args]
       end
 
-      def cons(v, list)
-        [v, *Array(list)]
+      def get(map, key)
+        map[key]
       end
 
-      def car(list)
-        v, *_ = Array(list)
-        v
+      def keys(map)
+        map.keys
       end
 
-      def cdr(list)
-        _, *v = Array(list)
-        v
+      def values(map)
+        map.values
       end
 
-      def map(fn, list)
-        list.map(&fn)
+      def assoc(map, key, val)
+        map.merge(key => val)
       end
 
-      def empty?(list)
-        list.empty?
+      def merge(*maps)
+        maps.reduce(:merge)
+      end
+
+      def dissoc(map, key)
+        map.reject{|k,_| k == key}
       end
     end
   end
 end
 
-Iode::Core.register Iode::Core::Lists
+Iode::Core.register Iode::Core::Maps
