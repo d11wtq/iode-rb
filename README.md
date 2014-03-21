@@ -8,20 +8,12 @@ An experimental lisp-family language hosted on Ruby.
 gem install iode
 ```
 
-## Usage
+## Usage 
 
-Firstly, please don't think that this project is a serious attempt to build
-some shiny new language that runs in Ruby. It is possible it may become that
-one day, but right now it exists purely for my own experimentation purposes.
-
-I am building a real language on the LLVM (currently in a private git repo),
-however I wanted a "quick and dirty" environment to hack together ideas for
-what the syntax and language features may include. Ruby is perfect for that.
-Once I have good ideas put down as working examples in this project, they will
-be ported upstream to the native JIT interpreter for LLVM.
-
-Currently this project just implements the guts of a functional language in the
-lisp-family. It will change considerably from the current implementation.
+This project is really a playground for language exploration while I build a
+real language on the LLVM. Nothing here is intended to be fast. I'm just going
+for expressiveness. If you try iode, please understand it will be slow and
+somewhat lacking in features.
 
 ### Command Line
 
@@ -114,6 +106,124 @@ Or something that updates some internal state.
 (puts (counter)) ; 3
 (puts (counter)) ; 4
 ```
+
+#### Data types
+
+Iode has a rich set of supported data types.
+
+Integers
+
+``` lisp
+(def x 42)
+```
+
+Floats
+
+``` lisp
+(def x 42.5)
+```
+
+Fractions
+
+``` lisp
+(def x 1/2)
+```
+
+Symbols
+
+``` lisp
+(def x 'foo)
+```
+
+Strings
+
+``` lisp
+(def x "this is a string")
+```
+
+Lists
+
+``` lisp
+(def x (list 1 2 3))
+(def y '(1 2 3)) ; same thing
+
+(head x) ; 1
+(tail x) ; '(2 3)
+(empty? (tail (tail (tail x)))) ; true
+```
+
+Maps (Hashes)
+
+``` lisp
+(def x {'a 42, 'b 7})
+
+(get x 'b) ; 7
+(assoc x 'b 9) ; {'a 42, 'b 9}
+(dissoc x 'b) ; {'a 42}
+```
+
+Regular expressions
+
+``` lisp
+(def re /[a-z]*_class/)
+```
+
+#### Loading other files
+
+This is a work in progress. The end goal is to have modules (source files)
+loaded based on naming conventions and load path configuration. I am fairly
+opposed to global definitions, so when you include a source file, none of the
+definitions that it provides will be seen by the current file. This is a good
+thing, trust me. Instead, what happens is the last expression in the required
+source file gets returned to the including file. The intention here is to
+expressly export any definitions that may be made public. Anybody who has used
+Node.js' require.js will be familiar with how this works. It minimizes coupling
+and allows for much less painful dependency management (different files may
+load different versions of the same dependency).
+
+Currently the only supported mechanism for loading a source file is `require`.
+
+``` lisp
+;; foo.io
+
+(def foo
+  (func () (puts "I am foo!")))
+```
+
+``` lisp
+;; bar.io
+
+(require "foo.io")
+
+(foo) ; error!
+
+(def foo (require "foo.io"))
+
+(foo) ; => "I am foo!"
+```
+
+Eventually I'm aiming for this:
+
+``` lisp
+;; lib/example.io
+
+(def foo () 42)
+(def baz () 99)
+
+(export '(foo baz))
+```
+
+``` lisp
+;; bar.io
+
+(import 'example.*) ; loads exported definitions into current scope
+
+(* (foo) (bar)) ; whatever 42 * 99 would be
+```
+
+Of course, there would be a suitable mechanism for renaming definitions
+(internally `export` would probably just return a Map, and `import` would
+enumerate that Map).
 
 #### Macros
 
