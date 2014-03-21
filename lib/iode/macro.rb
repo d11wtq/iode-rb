@@ -16,6 +16,6 @@
 
 module Iode
   # Class that represents a macro function in iode.
-  class Macro < Lambda
+  class Macro < Function
   end
 end

@@ -1,4 +1,4 @@
-# iode: lambda.rb
+# iode: function.rb
 # 
 # Copyright 2014 Chris Corbyn <chris@w3style.co.uk>
 # 
@@ -15,7 +15,7 @@
 # limitations under the License.
 
 module Iode
-  # Class that represents a lambda function in iode.
-  class Lambda < Proc
+  # Class that represents a func in iode.
+  class Function < Proc
   end
 end

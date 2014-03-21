@@ -63,9 +63,9 @@ module Iode
       sexps.inject(nil){|_,s| eval(s)}
     end
 
-    # Create a new lambda.
+    # Create a new func.
     #
-    # These lambdas act as closures in their environment.
+    # These funcs act as closures in their environment.
     #
     # @param [Array] argnames
     #   a list of argument names as function inputs
@@ -73,10 +73,10 @@ module Iode
     # @param [Object...] *sexps
     #   variadic list of S-Expressions for the body
     #
-    # @return [Lambda]
-    #   a callable lambda
-    def lambda(argnames, *sexps)
-      Lambda.new do |*args|
+    # @return [Function]
+    #   a callable function
+    def func(argnames, *sexps)
+      Function.new do |*args|
         Interpreter.new(
           @env.push_scope(Hash[argnames.zip(args)])
         ).progn(*sexps)
@@ -85,7 +85,7 @@ module Iode
 
     # Create a new macro.
     #
-    # Macros are acually just a special case of lambda and also close their
+    # Macros are acually just a special case of func and also close their
     # environment and can be passed as arguments.
     #
     # @param [Array] argnames
@@ -151,8 +151,8 @@ module Iode
           @env[car(cdr(sexp))] = eval(car(cdr(cdr(sexp))))
         when :def
           @env.define(car(cdr(sexp)), eval(car(cdr(cdr(sexp)))))
-        when :lambda
-          lambda(car(cdr(sexp)), *cdr(cdr(sexp)))
+        when :func
+          func(car(cdr(sexp)), *cdr(cdr(sexp)))
         when :macro
           macro(car(cdr(sexp)), *cdr(cdr(sexp)))
         when :apply
