@@ -115,8 +115,8 @@ module Iode
     # @return [Object]
     #   the function return value
     def apply(fn, args)
-      if fn.respond_to?(:call)
-        fn.call(*args)
+      if fn.respond_to?(:[])
+        fn[*args]
       else
         raise "Cannot apply non-function `#{fn}`"
       end

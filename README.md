@@ -150,6 +150,8 @@ Lists
 (head x) ; 1
 (tail x) ; '(2 3)
 (empty? (tail (tail (tail x)))) ; true
+(nth x 1) ; 2
+(x 1) ; 2 (same thing)
 ```
 
 Maps (Hashes)
@@ -158,6 +160,7 @@ Maps (Hashes)
 (def x {'a 42, 'b 7})
 
 (get x 'b) ; 7
+(x 'b) ; 7 (same thing)
 (assoc x 'b 9) ; {'a 42, 'b 9}
 (dissoc x 'b) ; {'a 42}
 ```
@@ -241,17 +244,17 @@ offer. Lots of `list` and `quote` for now. Quasiquoting is coming, however.
 Since iode doesn't yet have a `let` form, let's make our own with a macro.
 
 ``` lisp
-(def cadr
- (func (v) (car (cdr v))))
+(def second
+ (func (v) (head (tail v))))
 
 (def let
  (macro (bindings body)
    (list
     'apply
     (list 'func
-          (map car bindings)
+          (map head bindings)
           body)
-     (map cadr bindings))))
+     (map second bindings))))
 
 (let ((x 7)
       (y 8))

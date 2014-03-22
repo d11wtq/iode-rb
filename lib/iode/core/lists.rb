@@ -27,14 +27,18 @@ module Iode
         [v, *Array(list)]
       end
 
-      def car(list)
+      def head(list)
         v, *_ = Array(list)
         v
       end
 
-      def cdr(list)
+      def tail(list)
         _, *v = Array(list)
         v
+      end
+
+      def nth(list, n)
+        list[n]
       end
 
       def map(fn, list)
