@@ -21,6 +21,17 @@ module Iode
   #
   # The actual functions are mixed in by other modules.
   module Core
+    # Require an iode source file, retuning the last evaluated expression.
+    #
+    # @param [String] file
+    #   the filename to load, relative to the caller
+    #
+    # @return [Object]
+    #   the last thing evaluated in the file
+    def require(file)
+      Interpreter.new.eval(Reader.new.read_file(file))
+    end
+
     class << self
       include Core
 
@@ -32,23 +43,39 @@ module Iode
         include(base).tap{@definitions = nil}
       end
 
-      # Get a singleton instance of all the core definitions.
+      # Load all core definitions.
       #
       # @return [Hash]
       #   core functions and variables
       def definitions
-        @definitions ||=
-          Hash[
-            names.zip(
-              names.map(&method(:instance_method)).map{|m| m.bind(self)}
-            )
-          ]
+        unless @definitions
+          (@definitions = native_definitions).tap do |defs|
+            defs.merge!(hosted_definitions)
+          end
+        end
+
+        @definitions
       end
 
       private
 
-      def names
+      def native_names
         instance_methods
+      end
+
+      def native_definitions
+        Hash[
+          native_names.zip(
+            native_names.map(&method(:instance_method)).map{|m| m.bind(self)}
+          )
+        ]
+      end
+
+      def hosted_definitions
+        %w[let module].inject({}) do |acc, basename|
+          file = File.expand_path("../src/#{basename}.io", __FILE__)
+          acc.merge(self.require(file))
+        end
       end
     end
   end

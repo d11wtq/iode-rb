@@ -39,6 +39,14 @@ module Iode
         map.merge(key => val)
       end
 
+      def fold(fn, *args)
+        if args.length == 2
+          args.last.reduce(args.first, &fn)
+        else
+          args.last.reduce(&fn)
+        end
+      end
+
       def merge(*maps)
         maps.reduce(:merge)
       end

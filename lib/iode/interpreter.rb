@@ -79,7 +79,7 @@ module Iode
       Function.new do |*args|
         Interpreter.new(
           @env.push_scope(Hash[argnames.zip(args)])
-        ).progn(*sexps)
+        ).progn(*TailCall.optimize(sexps))
       end
     end
 
@@ -100,7 +100,37 @@ module Iode
       Macro.new do |*args|
         Interpreter.new(
           @env.push_scope(Hash[argnames.zip(args)])
-        ).progn(*sexps)
+        ).progn(*TailCall.optimize(sexps))
+      end
+    end
+
+    class TailCall
+      class << self
+        def optimize(sexps)
+          sexps << sexps.pop
+        end
+      end
+
+      attr_reader :func
+      attr_reader :args
+
+      def initialize(func, *args)
+        @func = func
+        @args = args
+      end
+
+      # Return a final value from the function application.
+      #
+      # Internally this function uses a trampoline to eliminate tail calls.
+      #
+      # @return [Object]
+      #   the final return value
+      def return
+        tail_call = self
+        while tail_call.kind_of?(TailCall)
+          tail_call = tail_call.func[*tail_call.args]
+        end
+        tail_call
       end
     end
 
@@ -116,7 +146,7 @@ module Iode
     #   the function return value
     def apply(fn, args)
       if fn.respond_to?(:[])
-        fn[*args]
+        TailCall.new(fn, *args).return
       else
         raise "Cannot apply non-function `#{fn}`"
       end
@@ -136,8 +166,6 @@ module Iode
         when nil
           nil
         when :quote
-          car(cdr(sexp))
-        when :quasiquote
           car(cdr(sexp))
         when :if
           if eval(car(cdr(sexp)))
@@ -164,6 +192,8 @@ module Iode
           else
             apply(callee, eval(car(cdr(sexp))))
           end
+        when :eval
+          eval(eval(car(cdr(sexp))))
         else
           callee = eval(car(sexp))
           case callee

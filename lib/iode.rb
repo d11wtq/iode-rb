@@ -23,12 +23,11 @@ require "iode/core/math"
 require "iode/core/strings"
 require "iode/core/output"
 require "iode/core/maps"
-require "iode/core/source_files"
 require "iode/scope"
-require "iode/function"
-require "iode/macro"
 require "iode/interpreter"
 require "iode/reader"
+require "iode/function"
+require "iode/macro"
 
 module Iode
   class << self

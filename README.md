@@ -171,62 +171,72 @@ Regular expressions
 (def re /[a-z]*_class/)
 ```
 
-#### Loading other files
+#### Modules
 
-This is a work in progress. The end goal is to have modules (source files)
-loaded based on naming conventions and load path configuration. I am fairly
-opposed to global definitions, so when you include a source file, none of the
-definitions that it provides will be seen by the current file. This is a good
-thing, trust me. Instead, what happens is the last expression in the required
-source file gets returned to the including file. The intention here is to
-expressly export any definitions that may be made public. Anybody who has used
-Node.js' require.js will be familiar with how this works. It minimizes coupling
-and allows for much less painful dependency management (different files may
-load different versions of the same dependency).
+> **Note:** This is a big work in progress and is feature incomplete.
 
-Currently the only supported mechanism for loading a source file is `require`.
+Source files (a.k.a. modules) may be loaded from a path using `require`.
 
 ``` lisp
 ;; foo.io
 
-(def foo
-  (func () (puts "I am foo!")))
+(puts "Foo loaded")
+
+(def test
+  (func () "Can't be reached"))
 ```
 
 ``` lisp
 ;; bar.io
 
-(require "foo.io")
-
-(foo) ; error!
-
-(def foo (require "foo.io"))
-
-(foo) ; => "I am foo!"
+(require "foo.io") ; Foo loaded
+(test) ; Error, no such function!
 ```
 
-Eventually I'm aiming for this:
+By design, definitions are kept local to individual modules. This means when
+you require another module, you don't gain its definitions, nor can it see your
+definitions.
+
+In order to share definitions between modules, iode provides the symmetric
+functions `export` and `import`.
 
 ``` lisp
-;; lib/example.io
+;; foo.io
 
-(def foo () 42)
-(def baz () 99)
+(def one
+  (func () "Called one"))
 
-(export '(foo baz))
+(def two
+  (func () "Called two"))
+
+(export '(one two))
 ```
+
+Any module needing access to `one` and `two` may not `import` the foo module.
 
 ``` lisp
 ;; bar.io
 
-(import 'example.*) ; loads exported definitions into current scope
+(import "foo.io")
 
-(* (foo) (bar)) ; whatever 42 * 99 would be
+(one) ; Called one
+(two) ; Called two
 ```
 
-Of course, there would be a suitable mechanism for renaming definitions
-(internally `export` would probably just return a Map, and `import` would
-enumerate that Map).
+This is definitely going to change, since the current implementation is only a
+step towards the end goal of loading modules by naming convention, and
+namespacing within modules. Since `one` and `two` were not explicitly referred
+to the current scope, the above example would be better written as:
+
+
+``` lisp
+;; bar.io
+
+(import 'foo)
+
+(foo/one) ; Called one
+(foo/two) ; Called two
+```
 
 #### Macros
 
@@ -329,22 +339,7 @@ prog.call(->(x){ x * 2 }) #=> 84
 prog.call(->(x){ x + 4 }) #=> 46
 ```
 
-## Development
-
-Iode (in this Ruby incarnation) is literally a few hours old at the time I
-write this. Much is still not yet developed. However, you may poke around in
-the internals and find some interesting this. A string of source code takes
-this path to being executed as code.
-
-    Input -> Reader<data> -> Interpreter<data> -> Core<data> -> Output
-
-The source string is parsed by the Reader into native lisp data (using Ruby
-data types, like Array and Symbol). The data representation is then given to
-the Interpreter's eval method, which is a simple recursive algorithm mapping
-the elements in the data to executable types (e.g. `[:func, [], 42]` becomes
-a Proc). Variables are held in the Scope class, which is able to chain Scopes
-together to create lexical closures. Core functions are registered as mixins
-in the Core module.
+### Extending iode
 
 If you want to add a native Ruby function to be applied like an iode function,
 put it in a Module and register it into `Iode::Core`:
@@ -363,8 +358,26 @@ Iode::Core.register MyFunctions
 Iode.run('(example 7 5)') #=> 12
 ```
 
-Once I have namespacing done, you'll be able to write actual iode code in
-separate files and have them loaded under a namespace.
+Of course, you can always use the built-in module support to write iode source
+code to be imported too.
+
+## Development
+
+If you feel inclined to poke around in the source, start with the
+`Interpreter#eval` method. You'll see it's a simple recursive algorithm that
+operates on native Ruby data. The native Ruby data is equivalent to native iode
+data. This is how all lisps work.
+
+The `Reader` class converts source code to this data format.
+
+Native ruby functions (things that can't be written in iode itself) are all
+found under lib/iode/core/. Built-in functions and macros written in iode
+itself are found under lib/iode/src/. The `Iode::Core` module handles loading
+these definitions into a Hash.
+
+The class `Iode::Scope` is the basis for all lexical scoping. It loads the core
+definitions into the root scope by default, then new scopes are chained from
+there.
 
 ## Copyright & Licensing
 
