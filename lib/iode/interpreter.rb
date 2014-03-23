@@ -60,7 +60,10 @@ module Iode
     # @return [Object]
     #   the value of the last S-Expression
     def progn(*sexps)
-      sexps.inject(nil){|_,s| eval(s)}
+      sexps.inject(nil) do |_,s|
+        # FIXME: Implement the changes described in #apply
+        eval(s)
+      end
     end
 
     # Create a new func.
@@ -79,7 +82,7 @@ module Iode
       Function.new do |*args|
         Interpreter.new(
           @env.push_scope(Hash[argnames.zip(args)])
-        ).progn(*TailCall.optimize(sexps))
+        ).progn(*sexps)
       end
     end
 
@@ -100,37 +103,7 @@ module Iode
       Macro.new do |*args|
         Interpreter.new(
           @env.push_scope(Hash[argnames.zip(args)])
-        ).progn(*TailCall.optimize(sexps))
-      end
-    end
-
-    class TailCall
-      class << self
-        def optimize(sexps)
-          sexps << sexps.pop
-        end
-      end
-
-      attr_reader :func
-      attr_reader :args
-
-      def initialize(func, *args)
-        @func = func
-        @args = args
-      end
-
-      # Return a final value from the function application.
-      #
-      # Internally this function uses a trampoline to eliminate tail calls.
-      #
-      # @return [Object]
-      #   the final return value
-      def return
-        tail_call = self
-        while tail_call.kind_of?(TailCall)
-          tail_call = tail_call.func[*tail_call.args]
-        end
-        tail_call
+        ).progn(*sexps)
       end
     end
 
@@ -146,7 +119,7 @@ module Iode
     #   the function return value
     def apply(fn, args)
       if fn.respond_to?(:[])
-        TailCall.new(fn, *args).return
+        Call.new(fn, *args).return
       else
         raise "Cannot apply non-function `#{fn}`"
       end
