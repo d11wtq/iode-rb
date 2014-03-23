@@ -156,7 +156,14 @@ module Iode
         when :macro
           macro(car(cdr(sexp)), *cdr(cdr(sexp)))
         when :apply
-          eval([car(cdr(sexp)), *car(cdr(cdr(sexp)))])
+          sexp = cdr(sexp)
+          callee = eval(car(sexp))
+          case callee
+          when Macro
+            eval(apply(callee, car(cdr(sexp))))
+          else
+            apply(callee, eval(car(cdr(sexp))))
+          end
         else
           callee = eval(car(sexp))
           case callee
