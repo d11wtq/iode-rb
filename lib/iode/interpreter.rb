@@ -192,7 +192,7 @@ module Iode
           callee = eval(car(sexp))
           case callee
           when Macro
-            eval(apply(callee, cdr(sexp)))
+            eval(eval(apply(callee, cdr(sexp))))
           else
             apply(callee, cdr(sexp).map(&method(:eval)))
           end

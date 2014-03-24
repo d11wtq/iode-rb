@@ -107,6 +107,38 @@ Or something that updates some internal state.
 (puts (counter)) ; 4
 ```
 
+#### Tail call optimization
+
+If the last thing a function returns is a call to another function (or itself),
+iode will replace the current stack frame with the new call, giving limitless
+recursion. This is practically essential for any functional language.
+
+The following will loop forever and make the script "hang":
+
+``` lisp
+(let ((forever (func ()
+                 (forever))))
+  (forever))
+```
+
+This works for mutual recursion too.
+
+``` lisp
+(let ((odd? (func (n)
+              (if (= n 0)
+                false
+                (even? (- n 1)))))
+      (even? (func (n)
+               (if (= n 0)
+                 true
+                 (odd? (- n 1))))))
+  (even? 200000))
+; true
+```
+
+Of course, the above routine is not efficient, but it demonstrates the ability
+to recurse without blowing the stack.
+
 #### Data types
 
 Iode has a rich set of supported data types.
@@ -240,51 +272,47 @@ to the current scope, the above example would be better written as:
 
 #### Macros
 
-Yes, iode has macros. In fact, very powerful macros. You can think of macros in
-the same way you think about funcs. They are 100% first-class to iode and
-have values that can be assigned to variables, passed into functions etc. Like
-funcs, they also provide a lexical closure over their environment. The
-difference between a macro and a func is that a macro receives unevaluated
-*code* as input and produces *code* as output.
+Macros in iode are first class and have some powerful features. They are
+objects and can therefore be assigned to variables and passed as arguments etc.
+
+In many ways, macros are just like funcs, except that they receive unevaluated
+iode data as input and return unevaluated iode data as output. This
+transformation is done at runtime, which is what gives iode's macros the
+quality of being handled as objects.
 
 The syntax for returning code is a little cumbersome at this point, since I
-haven't yet added quasiquoting to provide that magical "templating" that lisps
-offer. Lots of `list` and `quote` for now. Quasiquoting is coming, however.
+haven't yet added quasiquoting. That is very soon on my list of things to do.
 
-Since iode doesn't yet have a `let` form, let's make our own with a macro.
-
-``` lisp
-(def second
- (func (v) (head (tail v))))
-
-(def let
- (macro (bindings body)
-   (list
-    'apply
-    (list 'func
-          (map head bindings)
-          body)
-     (map second bindings))))
-
-(let ((x 7)
-      (y 8))
-  (puts (* x y)))
-```
-
-Note that the body of the macro in this version must be a single s-expression,
-since variadic arguments are not yet implemented in the language. You may use
-a `progn`, however.
+Since iode doesn't yet have the boolean operators `and` and `or`, let's define
+them with macros.
 
 ``` lisp
-(let ((x 7)
-      (y 8))
-  (progn
-    (puts (str "x = " x))
-    (puts (str "y = " y))
-    (puts (str "x * y = " (* x y)))))
+(def and
+  (macro (a b)
+    (list (quote if) a
+            b a)))
+
+(def or
+  (macro (a b)
+    (list (quote if) a
+            a b)))
+
+(p (and false 42)) ; false
+(p (and nil 1000)) ; nil
+(p (and 1000 nil)) ; nil
+(p (and 1000 888)) ; 888
+(p (and 888 1000)) ; 1000
+
+(p (or false 42)) ; 42
+(p (or nil 1000)) ; 1000
+(p (or 1000 nil)) ; 1000
+(p (or 1000 888)) ; 1000
+(p (or 888 1000)) ; 888
 ```
 
-Macros as values are a powerful feature of iode.
+Ok, so the above macros assume their components are side-effect free, since
+they evaluate the condition twice. It is left as an exercise to the reader to
+find a way to correct this issue.
 
 ### In Ruby Code
 
