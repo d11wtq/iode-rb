@@ -65,7 +65,7 @@ module Iode
 
       sexps.inject(nil) do |prev, sexp|
         if curr_idx == tail_pos
-          evaluate(sexp)
+          reduce(sexp)
         else
           curr_idx += 1
           eval(sexp)
@@ -140,14 +140,20 @@ module Iode
     # @return [Object]
     #   whatever the expression evaluates to
     def eval(sexp)
-      result = evaluate(sexp)
-      result = result.trampoline if result.kind_of?(Call)
-      result
+      result = reduce(sexp)
+
+      if result.kind_of?(Call)
+        result.trampoline
+      else
+        result
+      end
     end
 
     private
 
-    def evaluate(sexp)
+    # Eval, but may leave a tail call to be trampolined
+    def reduce(sexp)
+      # FIXME: Refactor this to a strategy
       case sexp
       when Array
         case car(sexp)
@@ -157,9 +163,9 @@ module Iode
           car(cdr(sexp))
         when :if
           if eval(car(cdr(sexp)))
-            evaluate(car(cdr(cdr(sexp))))
+            reduce(car(cdr(cdr(sexp))))
           else
-            evaluate(car(cdr(cdr(cdr(sexp)))))
+            reduce(car(cdr(cdr(cdr(sexp)))))
           end
         when :progn
           progn(*cdr(sexp))
