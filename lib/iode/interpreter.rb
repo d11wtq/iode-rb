@@ -15,7 +15,7 @@
 # limitations under the License.
 
 module Iode
-  # Iode interpreter, providing the central #eval function.
+  # Iode interpreter, providing the central #evaluate function.
   class Interpreter
     # Create a new Interpreter with a given Scope.
     #
@@ -51,8 +51,8 @@ module Iode
 
     # Create an explicit progn block.
     #
-    # A progn encapsulates a list of S-Expressions to be evaluated in sequence.
-    # The last evaluated S-Expression becomes the value of the progn.
+    # A progn encapsulates a list of S-Exprs to be evaluateuated in sequence.
+    # The last evaluateuated S-Expression becomes the value of the progn.
     #
     # @param [Object...] *sexps
     #   a list of S-Expressions to wrap in a progn
@@ -60,9 +60,16 @@ module Iode
     # @return [Object]
     #   the value of the last S-Expression
     def progn(*sexps)
-      sexps.inject(nil) do |_,s|
-        # FIXME: Implement the changes described in #apply
-        eval(s)
+      tail_pos = (sexps.length - 1)
+      curr_idx = 0
+
+      sexps.inject(nil) do |prev, sexp|
+        if curr_idx == tail_pos
+          evaluate(sexp)
+        else
+          curr_idx += 1
+          eval(sexp)
+        end
       end
     end
 
@@ -119,7 +126,7 @@ module Iode
     #   the function return value
     def apply(fn, args)
       if fn.respond_to?(:[])
-        Call.new(fn, *args).return
+        Call.new(fn, *args)
       else
         raise "Cannot apply non-function `#{fn}`"
       end
@@ -133,6 +140,14 @@ module Iode
     # @return [Object]
     #   whatever the expression evaluates to
     def eval(sexp)
+      result = evaluate(sexp)
+      result = result.trampoline if result.kind_of?(Call)
+      result
+    end
+
+    private
+
+    def evaluate(sexp)
       case sexp
       when Array
         case car(sexp)
@@ -142,9 +157,9 @@ module Iode
           car(cdr(sexp))
         when :if
           if eval(car(cdr(sexp)))
-            eval(car(cdr(cdr(sexp))))
+            evaluate(car(cdr(cdr(sexp))))
           else
-            eval(car(cdr(cdr(cdr(sexp)))))
+            evaluate(car(cdr(cdr(cdr(sexp)))))
           end
         when :progn
           progn(*cdr(sexp))

@@ -1,4 +1,4 @@
-# iode: tail_call.rb
+# iode: call.rb
 # 
 # Copyright 2014 Chris Corbyn <chris@w3style.co.uk>
 # 
@@ -15,37 +15,42 @@
 # limitations under the License.
 
 module Iode
+  # Represents a tail optimized function application.
+  #
+  # Internally this class uses a trampoline to eliminate the stack for a tail
+  # call.
   class Call
+    attr_reader :func, :args
+
+    # Initialize a new Call with the given func and args.
+    #
+    # @param [Callable] func
+    #   any callable object (using #[])
+    #
+    # @param [Object...] args
+    #   arguments to invoke the function with
     def initialize(func, *args)
       @func = func
       @args = args
     end
 
-    # Return a final value from the function application.
-    #
-    # Internally this function uses a trampoline to eliminate tail calls.
+    # Complete the tail call using a trampoline routine.
     #
     # @return [Object]
-    #   the final return value
-    def return
-      # FIXME: This doesn't work and blows the stack for reasons unclear to me.
-      #
-      # It is probably due to #apply always coming here and starting a *new*
-      # trampoline.
-      #
-      # Another idea is:
-      #
-      #   - 1. Change #apply to just return a Call object without invoking it.
-      #   - 2. Change #progn to invoke #bounce on any Call that is the old acc.
-      #   - 3. Capture return value of #progn in the block of #func/#macro.
-      #   - 4. If return value is a Call, bounce it.
-      #   - 5. But then what about calls inside conditionals?
-      trampoline = self
-      trampoline = trampoline.bounce while trampoline.kind_of?(Call)
-      trampoline
+    #   the final return value from the call
+    def trampoline
+      f = self
+      f = f.call while f.kind_of?(Call)
+      f
     end
 
-    def bounce
+    # Invoke this function and return a result.
+    #
+    # This may return a new Call, intended for use in #trampoline.
+    #
+    # @return [Object]
+    #   the result of this function call
+    def call
       @func[*@args]
     end
   end
