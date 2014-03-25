@@ -107,6 +107,33 @@ Or something that updates some internal state.
 (puts (counter)) ; 4
 ```
 
+#### Variadic functions
+
+A function may accept a variable number of arguments by using the `&` symbol
+before the parameter name.
+
+``` lisp
+(def sprintf
+  (func (str &values)
+    (apply format (cons str values))))
+
+(sprintf "It is %.2f degrees today in %s"
+         23.7
+         "Melbourne")
+```
+
+Whitespace after the `&` symbol is permitted and has no effect.
+
+The variadic parameter may not necessarily be the last parameter of the func.
+If any parameters are specified after the variadic parameter, they will
+increase the minimum arity of the func and will cause the variadic parameter
+to receive fewer arguments.
+
+Only one variadic parameter is permitted per func definition.
+
+Support for passing arguments to functions using variadic style is also
+planned (like the splat in Ruby).
+
 #### Tail call optimization
 
 If the last thing a function returns is a call to another function (or itself),

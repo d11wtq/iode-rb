@@ -86,9 +86,10 @@ module Iode
     # @return [Function]
     #   a callable function
     def func(argnames, *sexps)
+      arg_binding = ArgBinding.new(argnames)
       Function.new do |*args|
         Interpreter.new(
-          @env.push_scope(Hash[argnames.zip(args)])
+          @env.push_scope(arg_binding.produce(args))
         ).progn(*sexps)
       end
     end
@@ -107,9 +108,10 @@ module Iode
     # @return [Macro]
     #   a callable macro
     def macro(argnames, *sexps)
+      arg_binding = ArgBinding.new(argnames)
       Macro.new do |*args|
         Interpreter.new(
-          @env.push_scope(Hash[argnames.zip(args)])
+          @env.push_scope(arg_binding.produce(args))
         ).progn(*sexps)
       end
     end

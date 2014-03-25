@@ -65,7 +65,7 @@ module Iode
     end
 
     # variables/symbols
-    rule(symbol: /[^\(\)\s,;'"`\{\}]+/).as do |v|
+    rule(symbol: /&|[^\(\)\s,;'"`\{\}]+/).as do |v|
       case v
       when "nil"
         nil
